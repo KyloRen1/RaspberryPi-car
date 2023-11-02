@@ -1,8 +1,9 @@
 import tkinter as tk 
 from tkmacosx import Button
 from PIL import Image, ImageTk
-import time 
-import imageio
+import numpy as np 
+import cv2
+from urllib import request
 from easydict import EasyDict
 
 
@@ -18,67 +19,54 @@ class ControllerView:
         self.root.title(self.cfg.view.title)
         self.root.geometry(f'{self.cfg.view.width}x{self.cfg.view.height}')
 
-        self.video_window = tk.Label(self.root)
+        self.frame = tk.Frame(self.root)
+        self.frame.grid(row=0, column=0)
+
+        self.video_window = tk.Label(self.frame)
         self.video_window.grid(
-            row=self.cfg.view.video.pos[0], column=self.cfg.view.video.pos[1])
+            row=self.cfg.view.video.pos[0], column=self.cfg.view.video.pos[1],
+            padx=self.cfg.view.video.pad[0], pady=self.cfg.view.video.pad[1],
+            rowspan=self.cfg.view.video.rowspan)
 
     def _add_buttons(self):
-        button_width = self.cfg.view.button.vehicle.width
-        button_height = self.cfg.view.button.vehicle.height
-
         self.buttons = {}
-
-        for button in self.cfg.view.button.vehicle.buttons:
-            self.buttons[button['name']] = Button(self.root, text=button['name'], 
-                width=button_width, height=button_height)
-            self.buttons[button['name']].grid(
+        for button in self.cfg.view.buttons:
+            self.buttons[button['key']] = Button(self.frame, text=button['name'], 
+                width=button['width'], height=button['height'])
+            self.buttons[button['key']].grid(
                 row=button['pos'][0], column=button['pos'][1])
 
 
     def button_press(self, event):
         key = event.keysym
-        print('Turn: ', key)
-        self.buttons[key].config(bg="red")
+        if key in ['l', 's']:
+             self.buttons[key].config(bg="green")
+        else:
+            self.buttons[key].config(bg="red")
 
     def button_release(self, event):
-        for name in self.buttons.keys():
-            self.buttons[name].config(bg="white")
-
-    def connect_stream(self, url):
-        video = imageio.get_reader(url)
-        start_time = time.time()
-        _time = 0
-        for frame, image in enumerate(video.iter_data()):
-
-            # turn video array into an image and reduce the size
-            image = Image.fromarray(image)
-
-            # make image in a tk Image and put in the label
-            image = ImageTk.PhotoImage(image)
-
-            # introduce a wait loop so movie is real time -- asuming frame rate is 24 fps
-            # if there is no wait check if time needs to be reset in the event the video was paused
-            _time += 1 / 24
-            run_time = time.time() - start_time
-            while run_time < _time:
-                run_time = time.time() - start_time
-            else:
-                if run_time - _time > 0.1:
-                    start_time = time.time()
-                    _time = 0
-
-            yield frame, image
+        for key in self.buttons.keys():
+            self.buttons[key].config(bg="white")
 
 
     def stream(self, url):
-        video = self.connect_stream(url)
+        video = request.urlopen(url)
+
+        bytes = b''
 
         while True:
-            frame_number, frame = next(video)
-            self.video_window.config(image=frame)
-            self.root.bind("<KeyPress>", self.button_press)
-            self.root.bind("<KeyRelease>", self.button_release)
-            self.root.update()
+            bytes += video.read(1024)
+            a = bytes.find(b'\xff\xd8') #frame starting 
+            b = bytes.find(b'\xff\xd9') #frame ending
+            if a != -1 and b != -1:
+                bytes = bytes[b+2:]
+                img = cv2.imdecode(
+                    np.fromstring(bytes[a:b+2], dtype=np.uint8), 
+                    cv2.IMREAD_COLOR)
+                self.video_window.config(image=img)
+                self.root.bind("<KeyPress>", self.button_press)
+                self.root.bind("<KeyRelease>", self.button_release)
+                self.root.update()
 
         self.root.mainloop()
 
@@ -89,20 +77,18 @@ def main():
             'title': 'picar',
             'width': 600,
             'height': 400,
-            'button': {
-                'vehicle': {
-                    'width': 60,
-                    'height': 30,
-                    'buttons': [
-                        {'name': 'Up',    'pos': [1, 1]},
-                        {'name': 'Down',  'pos': [2, 2]},
-                        {'name': 'Left',  'pos': [3, 3]},
-                        {'name': 'Right', 'pos': [4, 4]},
-                    ]
-                }
-            },
+            'buttons': [
+                {'key': 'Up',    'name': 'Up',    'pos': [0, 2], 'width': 60, 'height': 30},
+                {'key': 'Down',  'name': 'Down',  'pos': [2, 2], 'width': 60, 'height': 30},
+                {'key': 'Left',  'name': 'Left',  'pos': [1, 1], 'width': 60, 'height': 30},
+                {'key': 'Right', 'name': 'Right', 'pos': [1, 3], 'width': 60, 'height': 30},
+                {'key': 'l',     'name': 'Light', 'pos': [3, 1], 'width': 60, 'height': 30},
+                {'key': 's',     'name': 'Sound', 'pos': [3, 2], 'width': 60, 'height': 30}
+            ],
             'video': {
-                'pos': [0, 0]
+                'pos': [0, 0],
+                'pad': [10, 10],
+                'rowspan': 3
             }
         }
     })
