@@ -1,15 +1,20 @@
 import tkinter as tk 
 from tkmacosx import Button
 from PIL import Image, ImageTk
-import numpy as np 
 import cv2
-from urllib import request
+import requests
+import ujson as json
 from easydict import EasyDict
 
 
 class ControllerView:
-    def __init__(self, cfg):
-        self.cfg = cfg 
+    def __init__(self, cfg, url, stream_port, comm_port):
+        self.cfg = cfg
+
+        self.car_url = url 
+        self.stream_port = stream_port
+        self.comm_port = comm_port
+        self.header = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
 
         self.root = tk.Tk()
         self._construct_view()
@@ -44,31 +49,43 @@ class ControllerView:
         else:
             self.buttons[key].config(bg="red")
 
+        r = requests.post(
+            f'{self.car_url}:{self.comm_port}', 
+            data=json.dumps({'key': key, 'status' : 'pressed'}), 
+            headers=self.header)
+        #r = requests.get(
+        #    f'{self.car_url}:{self.comm_port}/{key}/pressed'
+        #)
+        assert r.status_code == 200
+
     def button_release(self, event):
-        for key in self.buttons.keys():
-            self.buttons[key].config(bg="white")
+        key = event.keysym
+        self.buttons[key].config(bg="white")
+        r = requests.post(
+            f'{self.car_url}:{self.comm_port}', 
+            data=json.dumps({'key': key, 'status' : 'released'}), 
+            headers=self.header)
+        #r = requests.get(
+        #    f'{self.car_url}:{self.comm_port}/{key}/released'
+        #)
+        assert r.status_code == 200
 
 
-    def stream(self, url):
-        video = request.urlopen(url)
-
-        bytes = b''
-
-        while True:
-            bytes += video.read(1024)
-            a = bytes.find(b'\xff\xd8') #frame starting 
-            b = bytes.find(b'\xff\xd9') #frame ending
-            if a != -1 and b != -1:
-                bytes = bytes[b+2:]
-                img = cv2.imdecode(
-                    np.fromstring(bytes[a:b+2], dtype=np.uint8), 
-                    cv2.IMREAD_COLOR)
+    def stream(self, url=None):
+        if url is None:
+            url = f'{self.car_url}:{self.stream_port}' 
+        video = cv2.VideoCapture(url)
+        while video.isOpened():
+            ret, frame = video.read()
+            if ret:
+                img = Image.fromarray(frame)
+                img = ImageTk.PhotoImage(img)
                 self.video_window.config(image=img)
                 self.root.bind("<KeyPress>", self.button_press)
                 self.root.bind("<KeyRelease>", self.button_release)
                 self.root.update()
-
         self.root.mainloop()
+
 
 
 def main():
@@ -94,9 +111,13 @@ def main():
     })
 
 
-    view = ControllerView(cfg)
-    view.stream('/Users/bogdanivanyuk/Desktop/PySauron/data/UCF-Crime/Anomaly-Videos-Part-2/Burglary/Burglary001_x264.mp4')
-
+    view = ControllerView(
+        cfg, 
+        url='http://192.168.1.150', 
+        stream_port='8091/?action=stream', 
+        comm_port='5000'
+    )
+    view.stream()
 
 if __name__ == '__main__':
     main()
