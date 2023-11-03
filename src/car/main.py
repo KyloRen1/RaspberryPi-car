@@ -10,7 +10,7 @@ from src.car.raspi_car import Car
 
 system = Car()
 
-'''
+
 class CarHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -55,6 +55,7 @@ def action(deviceName, action):
         system.write2register('buzzer', 0)
     
     return Response(status=200)
+'''
 
         
 
@@ -62,14 +63,14 @@ def action(deviceName, action):
 @click.option("--bind-host", default='0.0.0.0', type=str, help="bind host ip")
 @click.option("--port", default=5000, type=int, help="port number")
 def main(bind_host, port):
-    #print(f'Listening on http://{bind_host}:{port}')
+    print(f'Listening on http://{bind_host}:{port}')
 
-    #server = HTTPServer((bind_host, port), CarHTTPRequestHandler)
-    #server.serve_forever()
+    server = HTTPServer((bind_host, port), CarHTTPRequestHandler)
+    server.serve_forever()
 
     ######################
 
-    app.run(host=bind_host, port=port, debug=True)
+    #app.run(host=bind_host, port=port, debug=True)
 
 
 if __name__ == '__main__':
