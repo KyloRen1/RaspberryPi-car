@@ -1,2 +1,7 @@
 smbus2==0.4.3
 pytest==7.4.2
+# toga==0.3.1
+tk==0.1.0
+tkmacosx==1.0.5
+Pillow==10.1.0
+opencv-python==4.8.1.78
