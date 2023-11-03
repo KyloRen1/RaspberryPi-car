@@ -4,25 +4,43 @@ Building a Raspberry Pi car, from putting it together to testing and adding remo
 ### Current progress
 - [x] Car assembly
 - [x] System tests
-- [ ] Car controller - IN PROGRESS
-- [ ] UI for car controller - IN PROGRESS
+- [x] Car controller
+- [x] UI for car controller
+- [ ] Improve controller style
+- [ ] Switch to Flask server
 
 ## Getting started
-1. Clone repository
+1. Clone repository to Raspberry Pi and your computer
    ```python
    git clone https://github.com/KyloRen1/RaspberryPi-car
    ```
-2. Create python environment
+2. Create python environment in Raspberry Pi and your computer
    ```python
     python3 -m venv venv 
     source venv/bin/activate
     pip install -r requirements.txt
    ```
-3. Run test
+3. Run test on Raspberry Pi
    ```python
     pytest
    ```
 
+4. Launch video stream on Raspberry Pi
+   ```python
+   cd RaspberryPi-car/src/car/mjpg-streamer/
+   make USE_LIBV4L2=true clean all
+   sh start_streamer.sh
+   ```
+
+5. Launch server on Raspberry Pi
+   ```python
+   python -m src.car.main
+   ```
+
+6. Laucnh client on your computer
+   ```python
+   python src/client/view.py
+   ```
 
 ## System checks
 Testing of the system for buzzer, ligths, wheels and turns, using pytest.
