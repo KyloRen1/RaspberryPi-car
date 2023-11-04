@@ -10,6 +10,9 @@ Building a Raspberry Pi car involves various steps, from assembling it to testin
 - [x] Switch to Flask server
 
 ## Getting started
+<details>
+<summary>Expand for Installation Instructions</summary>
+
 1. Clone repository to Raspberry Pi and your computer
    ```python
    git clone https://github.com/KyloRen1/RaspberryPi-car
@@ -41,7 +44,7 @@ Building a Raspberry Pi car involves various steps, from assembling it to testin
    ```python
    python src/client/view.py
    ```
-
+</details>
 ## System checks
 Testing of the system for buzzer, ligths, wheels and turns, using pytest.
 
