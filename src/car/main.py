@@ -61,6 +61,8 @@ def stop():
 @app.route("/sound/<int:volume>")
 def buzzer(volume):
     car.write2register('buzzer', volume)
+    time.sleep(0.5)
+    car.write2register('buzzer', 0)
     return Response(status=200)
 
 
