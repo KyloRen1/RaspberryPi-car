@@ -45,6 +45,7 @@ Building a Raspberry Pi car involves various steps, from assembling it to testin
    python src/client/view.py
    ```
 </details>
+
 ## System checks
 Testing of the system for buzzer, ligths, wheels and turns, using pytest.
 
