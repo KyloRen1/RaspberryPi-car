@@ -8,7 +8,7 @@ import pytest
     (0, 1, 0), # pink
     (0, 0, 1), # yellow / green
     (1, 0, 0), # cyan
-    (0, 0, 0), # white
+    (0, 0, 0), # reset
 ])
 def test_rgbled(r, g, b, system):
     # color update

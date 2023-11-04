@@ -27,6 +27,9 @@ class Car:
             'sonic': 12
         }
 
+        self.speed = 0
+        self.direction = 1
+
 
     def write2register(self, command: str, value: int):
         command = self.cmd_map[command]
