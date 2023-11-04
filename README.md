@@ -1,13 +1,13 @@
 # RaspberryPi-car
-Building a Raspberry Pi car, from putting it together to testing and adding remote control features.
+Building a Raspberry Pi car involves various steps, from assembling it to testing and adding remote control features.
 
-### Current progress
+### Current Progress
 - [x] Car assembly
 - [x] System tests
 - [x] Car controller
 - [x] UI for car controller
 - [ ] Improve controller style
-- [ ] Switch to Flask server
+- [x] Switch to Flask server
 
 ## Getting started
 1. Clone repository to Raspberry Pi and your computer
