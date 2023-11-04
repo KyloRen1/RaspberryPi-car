@@ -1,4 +1,3 @@
-import time
 from smbus2 import SMBus
 
 class Car:
@@ -26,6 +25,21 @@ class Car:
             'rgbled_io3': 11,
             'sonic': 12
         }
+
+
+    def degrees2us(self, degrees:int, PULSE_WIDTH_0:int =500, PULSE_WIDTH_180:int =2500) -> int:
+        ''' Convert angle degree to microseconds
+            Formula taken from here: https://github.com/fivdi/pigpio/issues/69
+    
+            Args:
+                degree (int): angle degree value
+                PULSE_WIDTH_0 (int): pulse width in microseconds for 0 degrees
+                PULSE_WIDTH_180 (int): Pulse width in microseconds for 180 degrees
+            Return:
+                microseconds (float): converted value to microseconds
+        '''
+        microseconds = PULSE_WIDTH_0 + (degrees / 180) * (PULSE_WIDTH_180 - PULSE_WIDTH_0)
+        return int(microseconds)
 
 
     def write2register(self, command: str, value: int):
