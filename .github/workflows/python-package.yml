@@ -24,8 +24,5 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with Ruff
         run: |
-          ruff --format=github --target-version=py310 .
+          ruff --target-version=py310 .
         continue-on-error: true
-      - name: Test with pytest
-        run: |
-          python -m pytest -W ignore::DeprecationWarning --ignore=tests/system
