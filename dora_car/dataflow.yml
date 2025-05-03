@@ -1,0 +1,34 @@
+nodes:
+  - id: robot
+    operator:
+      python: operators/robot.py
+    inputs:
+      lights: cmd_manager/lights
+      buzzer: cmd_manager/buzzer
+      stop: cmd_manager/stop
+      move: cmd_manager/move
+      turn: cmd_manager/turn
+
+  - id: webcam
+    path: node/opencv_stream.py
+    inputs:
+      tick:
+        source: dora/timer/millis/50
+        queue_size: 1
+    output:
+      - image
+
+  - id: cmd_manager
+    operator:
+      python: operators/cmd.py
+    inputs:
+      image: webcam/image
+      tick:
+        source: dora/timer/millis/50
+        queue_size: 1
+    outputs:
+      - lights
+      - buzzer
+      - stop
+      - move
+      - turn

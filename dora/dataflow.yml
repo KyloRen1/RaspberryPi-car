@@ -1,0 +1,95 @@
+nodes:
+  - id: robot
+    operator:
+      python: operators/robot.py
+      inputs:
+        blaster:
+          source: llm/blaster
+          queue_size: 1
+        led:
+          source: llm/led
+          queue_size: 1
+        control:
+          source: planning/control
+          queue_size: 1
+        gimbal_control:
+          source: planning/gimbal_control
+          queue_size: 1
+        tick:
+          source: dora/timer/millis/100
+          queue_size: 1
+      outputs:
+        - position
+
+  - id: bot_webcam # TODO
+    custom:
+      source: operators/bot_webcam.py
+      outputs:
+        - image
+
+  - id: object_detection
+    operator:
+      python: operators/object_detection.py
+      inputs:
+        image: bot_webcam/image
+      outputs:
+        - bbox
+
+  - id: llm
+    operator:
+      python: operators/llm_op.py
+      inputs:
+        code_modifier: vectordb: raw_file
+        assistant: keyboard/ask
+        message_sender: keyboard/send
+      outputs:
+        - modified_file
+        - assistant_message
+        - line
+        - control
+        - led
+        - blaster
+        - rotation
+
+
+  - id: planning
+    operator:
+      python: operators/planning_op.py
+      inputs:
+        position: robot/position
+        bbox: object_detection/bbox
+        tick: dora/time/millis/100
+      outputs:
+        - control
+        - gimbal_control
+        - led
+        - blaster
+
+  - id: keyboard
+    custom:
+      source: operators/keyboard_op.py
+      outputs:
+        - buffer
+        - submitted
+        - record
+        - ask
+        - send
+        - change
+      inputs:
+        recording: whisper/text
+
+  - id: microphone
+    operator: 
+      python: operators/microphone_op.py
+      inputs:
+        record: keyboard/record
+      outputs:
+        - audio
+
+  - id: whisper
+    operator:
+      python: operators/whisper_op.py
+      inputs:
+        audio: microphone/audio
+      outputs:
+        - text

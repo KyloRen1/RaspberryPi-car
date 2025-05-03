@@ -1,0 +1,8 @@
+opencv-python==4.9.0.80
+numpy==1.26.0
+pyarrow==17.0.0
+pylcs==0.1.1
+torch==2.2.2
+transformers==4.43.3
+openai==1.37.1
+accelerate==0.33.0
